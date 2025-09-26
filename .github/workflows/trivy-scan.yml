@@ -1,5 +1,5 @@
 name: CI/CD with Trivy Security Scan
-
+# trivy-scan
 on:
   push:
     branches: [ "main" ]

@@ -1,0 +1,41 @@
+name: CI/CD with Trivy Security Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Docker Buildx (for building images)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build Docker image
+      - name: Build Docker Image
+        run: docker build -t simple-php-app:latest .
+
+      # Run Trivy scan on the built image
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: simple-php-app:latest
+          format: 'table'
+          exit-code: '1'             # fail job if vulnerabilities found
+          severity: 'HIGH,CRITICAL'  # only fail for high/critical
+
+      # (Optional) Save Trivy report as artifact
+      - name: Upload Trivy Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.txt

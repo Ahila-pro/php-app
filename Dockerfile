@@ -1,37 +1,40 @@
+# Use Alpine-based PHP 8.3 CLI image
 FROM php:8.3-cli-alpine
 
-# Install system dependencies + PHP extensions
-RUN apk add --no-cache \
-    git \
-    unzip \
-    curl \
-    bash \
-    icu-dev \
-    libzip-dev \
-    oniguruma-dev \
-    autoconf \
-    g++ \
-    make \
+# Install required system packages and PHP extensions
+RUN apk update && apk add --no-cache \
+        git \
+        unzip \
+        curl \
+        bash \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        libzip-dev \
+        oniguruma-dev \
+        icu-dev \
     && docker-php-ext-install \
-       mysqli \
-       pdo \
-       pdo_mysql \
-       intl \
-       zip \
-    && docker-php-ext-enable mysqli pdo pdo_mysql intl zip
+        pdo \
+        pdo_mysql \
+        mysqli \
+        mbstring \
+        zip \
+        intl \
+        gd
 
-# Install Composer
+# Install Composer globally
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy app files
+# Copy application files
 COPY . .
 
-# Install PHP dependencies (if composer.json exists)
-RUN if [ -f composer.json ]; then composer install --no-dev --optimize-autoloader; fi
+# Install PHP dependencies
+# RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist
 
+# Expose port 80
 EXPOSE 80
 
-CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]
+# Start PHP built-in server (for dev/testing)
+CMD ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html"]

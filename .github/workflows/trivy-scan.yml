@@ -54,4 +54,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: yourdockerhubusername/simple-php-app:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/simple-php-app:latest
